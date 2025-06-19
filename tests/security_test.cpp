@@ -4,7 +4,7 @@
 #include <set>
 #include <algorithm>
 #include "test_framework.h"
-#include "../wallet_generator.cpp"
+#include "../wallet_generator.h"
 
 class SecurityTest {
 private:
@@ -151,7 +151,7 @@ private:
         }
         
         // Should have unique addresses for each network and derivation path combination
-        int expectedAddresses = networks.size() * 10;
+        size_t expectedAddresses = networks.size() * 10;
         TEST_ASSERT(allAddresses.size() == expectedAddresses, 
                    "All generated addresses should be unique");
     }
