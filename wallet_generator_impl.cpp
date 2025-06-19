@@ -117,8 +117,6 @@ std::vector<uint8_t> WalletGenerator::deriveKey(const std::vector<uint8_t>& seed
     // Master key derivation
     std::string hmacKey = "Bitcoin seed";
     std::vector<uint8_t> hmacKeyBytes(hmacKey.begin(), hmacKey.end());
-    // Fixed: removed unused variable warning by using the result directly
-    std::vector<uint8_t> masterKeyData = hmacSha512(hmacKeyBytes, seed);
     
     // Use the path to create different keys (simplified approach)
     // In a real implementation, you would parse the path and derive step by step

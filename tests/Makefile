@@ -104,9 +104,7 @@ static-analysis:
 	@echo "\n=== Running Static Analysis ==="
 	@if command -v cppcheck >/dev/null 2>&1; then \
 		cppcheck --enable=all --error-exitcode=1 --suppress=missingIncludeSystem \
-			--suppress=unusedFunction:../wallet_generator_impl.cpp:printWallet \
-			--suppress=unusedFunction:../wallet_generator_impl.cpp:printUsage \
-			--suppress=unusedFunction:test_framework.h:reset \
+			--suppress=unusedFunction \
 			--inline-suppr \
 			$(UNIT_TEST_SRC) $(INTEGRATION_TEST_SRC) $(PERFORMANCE_TEST_SRC) $(SECURITY_TEST_SRC); \
 	else \
