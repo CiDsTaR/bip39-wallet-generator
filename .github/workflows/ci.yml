@@ -72,7 +72,9 @@ jobs:
     
     - name: Install dependencies
       run: |
-        brew install openssl secp256k1
+        # Check and install only if needed
+        brew list openssl &>/dev/null || brew install openssl
+        brew list secp256k1 &>/dev/null || brew install secp256k1
         
     - name: Build project
       run: make
