@@ -146,7 +146,7 @@ jobs:
       
     - name: Upload test artifacts
       uses: actions/upload-artifact@v4
-      if: always()
+      if: always() && (hashFiles('tests/coverage_html/**') != '' || hashFiles('artifacts/**') != '')
       with:
         name: test-results
         path: |
