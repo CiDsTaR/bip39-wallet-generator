@@ -129,17 +129,17 @@ run_all_tests() {
     print_header "Comprehensive Test Suite"
     
     # Continue running all tests even if some fail, but track failures
-    run_test "Unit Tests" "cd tests && make test-unit" || true
-    run_test "Integration Tests" "cd tests && make test-integration" || true
-    run_test "Performance Tests" "cd tests && make test-performance" || true
-    run_test "Security Tests" "cd tests && make test-security" || true
+    run_test "Unit Tests" "(cd tests && make test-unit)" || true
+    run_test "Integration Tests" "(cd tests && make test-integration)" || true
+    run_test "Performance Tests" "(cd tests && make test-performance)" || true
+    run_test "Security Tests" "(cd tests && make test-security)" || true
     
     if command -v cppcheck &> /dev/null; then
-        run_test "Static Analysis" "cd tests && make static-analysis" || true
+        run_test "Static Analysis" "(cd tests && make static-analysis)" || true
     fi
     
     if command -v valgrind &> /dev/null; then
-        run_test "Memory Leak Tests" "cd tests && make memtest" || true
+        run_test "Memory Leak Tests" "(cd tests && make memtest)" || true
     fi
 }
 
@@ -147,7 +147,7 @@ run_all_tests() {
 run_quick_tests() {
     print_header "Quick Test Suite"
     
-    run_test "Unit Tests" "cd tests && make test-unit" || true
+    run_test "Unit Tests" "(cd tests && make test-unit)" || true
     run_test "Basic Integration" "./wallet_generator \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\"" || true
 }
 
@@ -213,7 +213,7 @@ main() {
                 ;;
             -u|--unit)
                 check_prerequisites
-                run_test "Unit Tests" "cd tests && make test-unit" || true
+                run_test "Unit Tests" "(cd tests && make test-unit)" || true
                 show_summary
                 if [ $FAILED_TESTS -eq 0 ]; then
                     exit 0
@@ -223,7 +223,7 @@ main() {
                 ;;
             -i|--integration)
                 check_prerequisites
-                run_test "Integration Tests" "cd tests && make test-integration" || true
+                run_test "Integration Tests" "(cd tests && make test-integration)" || true
                 show_summary
                 if [ $FAILED_TESTS -eq 0 ]; then
                     exit 0
@@ -233,7 +233,7 @@ main() {
                 ;;
             -p|--performance)
                 check_prerequisites
-                run_test "Performance Tests" "cd tests && make test-performance" || true
+                run_test "Performance Tests" "(cd tests && make test-performance)" || true
                 show_summary
                 if [ $FAILED_TESTS -eq 0 ]; then
                     exit 0
@@ -243,7 +243,7 @@ main() {
                 ;;
             -s|--security)
                 check_prerequisites
-                run_test "Security Tests" "cd tests && make test-security" || true
+                run_test "Security Tests" "(cd tests && make test-security)" || true
                 show_summary
                 if [ $FAILED_TESTS -eq 0 ]; then
                     exit 0
@@ -254,7 +254,7 @@ main() {
             -c|--coverage)
                 check_prerequisites
                 if command -v lcov &> /dev/null; then
-                    run_test "Coverage Analysis" "cd tests && make coverage" || true
+                    run_test "Coverage Analysis" "(cd tests && make coverage)" || true
                     show_summary
                     if [ $FAILED_TESTS -eq 0 ]; then
                         exit 0
@@ -269,7 +269,7 @@ main() {
             -m|--memory)
                 check_prerequisites
                 if command -v valgrind &> /dev/null; then
-                    run_test "Memory Leak Tests" "cd tests && make memtest" || true
+                    run_test "Memory Leak Tests" "(cd tests && make memtest)" || true
                     show_summary
                     if [ $FAILED_TESTS -eq 0 ]; then
                         exit 0
@@ -284,7 +284,7 @@ main() {
             -t|--static)
                 check_prerequisites
                 if command -v cppcheck &> /dev/null; then
-                    run_test "Static Analysis" "cd tests && make static-analysis" || true
+                    run_test "Static Analysis" "(cd tests && make static-analysis)" || true
                     show_summary
                     if [ $FAILED_TESTS -eq 0 ]; then
                         exit 0
@@ -298,7 +298,7 @@ main() {
                 ;;
             -b|--benchmark)
                 check_prerequisites
-                run_test "Performance Benchmarks" "cd tests && make benchmark" || true
+                run_test "Performance Benchmarks" "(cd tests && make benchmark)" || true
                 show_summary
                 if [ $FAILED_TESTS -eq 0 ]; then
                     exit 0
@@ -308,7 +308,7 @@ main() {
                 ;;
             -x|--stress)
                 check_prerequisites
-                run_test "Stress Tests" "cd tests && make stress" || true
+                run_test "Stress Tests" "(cd tests && make stress)" || true
                 show_summary
                 if [ $FAILED_TESTS -eq 0 ]; then
                     exit 0
@@ -318,7 +318,7 @@ main() {
                 ;;
             -o|--optimizations)
                 check_prerequisites
-                run_test "Optimization Level Tests" "cd tests && make test-optimizations" || true
+                run_test "Optimization Level Tests" "(cd tests && make test-optimizations)" || true
                 show_summary
                 if [ $FAILED_TESTS -eq 0 ]; then
                     exit 0
@@ -328,7 +328,7 @@ main() {
                 ;;
             -r|--compilers)
                 check_prerequisites
-                run_test "Compiler Tests" "cd tests && make test-compilers" || true
+                run_test "Compiler Tests" "(cd tests && make test-compilers)" || true
                 show_summary
                 if [ $FAILED_TESTS -eq 0 ]; then
                     exit 0
