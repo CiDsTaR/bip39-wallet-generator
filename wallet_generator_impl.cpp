@@ -31,8 +31,6 @@ std::vector<uint8_t> WalletGenerator::sha256(const std::vector<uint8_t>& data) {
 }
 
 std::vector<uint8_t> WalletGenerator::ripemd160(const std::vector<uint8_t>& data) {
-    std::vector<uint8_t> hash(20);
-    
     // Try modern EVP interface first
     EVP_MD_CTX* evp_ctx = EVP_MD_CTX_new();
     if (!evp_ctx) {
@@ -41,7 +39,8 @@ std::vector<uint8_t> WalletGenerator::ripemd160(const std::vector<uint8_t>& data
     
     const EVP_MD* ripemd160_md = EVP_ripemd160();
     if (ripemd160_md) {
-        // RIPEMD160 is available
+        // RIPEMD160 is available - declare hash here to reduce scope
+        std::vector<uint8_t> hash(20);
         if (EVP_DigestInit_ex(evp_ctx, ripemd160_md, nullptr) == 1 &&
             EVP_DigestUpdate(evp_ctx, data.data(), data.size()) == 1 &&
             EVP_DigestFinal_ex(evp_ctx, hash.data(), nullptr) == 1) {
