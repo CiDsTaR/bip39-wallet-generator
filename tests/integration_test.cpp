@@ -46,7 +46,7 @@ private:
         
         // Test basic wallet generation
         std::string basicOutput = runCommand("../wallet_generator \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\"");
-        TEST_ASSERT(basicOutput.find("Bitcoin Wallet") != std::string::npos, "Should generate Bitcoin wallet by default");
+        TEST_ASSERT(basicOutput.find("=== bitcoin Wallet ===") != std::string::npos, "Should generate Bitcoin wallet by default");
         TEST_ASSERT(basicOutput.find("Private Key:") != std::string::npos, "Should show private key");
         TEST_ASSERT(basicOutput.find("Address:") != std::string::npos, "Should show address");
     }
@@ -60,11 +60,10 @@ private:
             std::string command = "../wallet_generator -n " + network + " \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\"";
             std::string output = runCommand(command);
             
-            // Convert first letter to uppercase for comparison
-            std::string networkCapitalized = network;
-            networkCapitalized[0] = toupper(networkCapitalized[0]);
+            // Look for the exact format used in output: "=== network Wallet ==="
+            std::string expectedPattern = "=== " + network + " Wallet ===";
             
-            TEST_ASSERT(output.find(networkCapitalized) != std::string::npos, 
+            TEST_ASSERT(output.find(expectedPattern) != std::string::npos, 
                        "Should generate " + network + " wallet");
             TEST_ASSERT(output.find("Private Key:") != std::string::npos, 
                        "Should show private key for " + network);
