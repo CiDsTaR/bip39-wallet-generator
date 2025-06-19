@@ -57,6 +57,9 @@ run_test() {
     fi
     ((TOTAL_TESTS++))
     echo
+    
+    # Return the exit code for immediate handling if needed
+    return $exit_code
 }
 
 # Function to check prerequisites
@@ -125,17 +128,18 @@ show_usage() {
 run_all_tests() {
     print_header "Comprehensive Test Suite"
     
-    run_test "Unit Tests" "cd tests && make test-unit"
-    run_test "Integration Tests" "cd tests && make test-integration"
-    run_test "Performance Tests" "cd tests && make test-performance"
-    run_test "Security Tests" "cd tests && make test-security"
+    # Continue running all tests even if some fail, but track failures
+    run_test "Unit Tests" "cd tests && make test-unit" || true
+    run_test "Integration Tests" "cd tests && make test-integration" || true
+    run_test "Performance Tests" "cd tests && make test-performance" || true
+    run_test "Security Tests" "cd tests && make test-security" || true
     
     if command -v cppcheck &> /dev/null; then
-        run_test "Static Analysis" "cd tests && make static-analysis"
+        run_test "Static Analysis" "cd tests && make static-analysis" || true
     fi
     
     if command -v valgrind &> /dev/null; then
-        run_test "Memory Leak Tests" "cd tests && make memtest"
+        run_test "Memory Leak Tests" "cd tests && make memtest" || true
     fi
 }
 
@@ -143,8 +147,8 @@ run_all_tests() {
 run_quick_tests() {
     print_header "Quick Test Suite"
     
-    run_test "Unit Tests" "cd tests && make test-unit"
-    run_test "Basic Integration" "./wallet_generator \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
+    run_test "Unit Tests" "cd tests && make test-unit" || true
+    run_test "Basic Integration" "./wallet_generator \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\"" || true
 }
 
 # Function to show test results summary
@@ -188,95 +192,149 @@ main() {
                 check_prerequisites
                 run_all_tests
                 show_summary
-                # Fixed: Return the actual failed test count, not just whether there are failures
-                exit $FAILED_TESTS
+                # Fixed: Properly handle the exit code - if no tests failed, exit with 0
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    print_color $GREEN "All tests passed successfully!"
+                    exit 0
+                else
+                    print_color $RED "$FAILED_TESTS test(s) failed"
+                    exit 1
+                fi
                 ;;
             -q|--quick)
                 check_prerequisites
                 run_quick_tests
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -u|--unit)
                 check_prerequisites
-                run_test "Unit Tests" "cd tests && make test-unit"
+                run_test "Unit Tests" "cd tests && make test-unit" || true
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -i|--integration)
                 check_prerequisites
-                run_test "Integration Tests" "cd tests && make test-integration"
+                run_test "Integration Tests" "cd tests && make test-integration" || true
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -p|--performance)
                 check_prerequisites
-                run_test "Performance Tests" "cd tests && make test-performance"
+                run_test "Performance Tests" "cd tests && make test-performance" || true
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -s|--security)
                 check_prerequisites
-                run_test "Security Tests" "cd tests && make test-security"
+                run_test "Security Tests" "cd tests && make test-security" || true
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -c|--coverage)
                 check_prerequisites
                 if command -v lcov &> /dev/null; then
-                    run_test "Coverage Analysis" "cd tests && make coverage"
+                    run_test "Coverage Analysis" "cd tests && make coverage" || true
+                    show_summary
+                    if [ $FAILED_TESTS -eq 0 ]; then
+                        exit 0
+                    else
+                        exit 1
+                    fi
                 else
                     print_color $RED "lcov not found. Install with: sudo apt-get install lcov"
                     exit 1
                 fi
-                show_summary
-                exit $FAILED_TESTS
                 ;;
             -m|--memory)
                 check_prerequisites
                 if command -v valgrind &> /dev/null; then
-                    run_test "Memory Leak Tests" "cd tests && make memtest"
+                    run_test "Memory Leak Tests" "cd tests && make memtest" || true
+                    show_summary
+                    if [ $FAILED_TESTS -eq 0 ]; then
+                        exit 0
+                    else
+                        exit 1
+                    fi
                 else
                     print_color $RED "valgrind not found. Install with: sudo apt-get install valgrind"
                     exit 1
                 fi
-                show_summary
-                exit $FAILED_TESTS
                 ;;
             -t|--static)
                 check_prerequisites
                 if command -v cppcheck &> /dev/null; then
-                    run_test "Static Analysis" "cd tests && make static-analysis"
+                    run_test "Static Analysis" "cd tests && make static-analysis" || true
+                    show_summary
+                    if [ $FAILED_TESTS -eq 0 ]; then
+                        exit 0
+                    else
+                        exit 1
+                    fi
                 else
                     print_color $RED "cppcheck not found. Install with: sudo apt-get install cppcheck"
                     exit 1
                 fi
-                show_summary
-                exit $FAILED_TESTS
                 ;;
             -b|--benchmark)
                 check_prerequisites
-                run_test "Performance Benchmarks" "cd tests && make benchmark"
+                run_test "Performance Benchmarks" "cd tests && make benchmark" || true
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -x|--stress)
                 check_prerequisites
-                run_test "Stress Tests" "cd tests && make stress"
+                run_test "Stress Tests" "cd tests && make stress" || true
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -o|--optimizations)
                 check_prerequisites
-                run_test "Optimization Level Tests" "cd tests && make test-optimizations"
+                run_test "Optimization Level Tests" "cd tests && make test-optimizations" || true
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -r|--compilers)
                 check_prerequisites
-                run_test "Compiler Tests" "cd tests && make test-compilers"
+                run_test "Compiler Tests" "cd tests && make test-compilers" || true
                 show_summary
-                exit $FAILED_TESTS
+                if [ $FAILED_TESTS -eq 0 ]; then
+                    exit 0
+                else
+                    exit 1
+                fi
                 ;;
             -h|--help)
                 show_usage
