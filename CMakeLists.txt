@@ -27,35 +27,12 @@ if(WIN32)
     find_library(SECP256K1_LIBRARY secp256k1)
     
     if(NOT SECP256K1_INCLUDE_DIR OR NOT SECP256K1_LIBRARY)
-        message(WARNING "secp256k1 not found. Using included minimal implementation.")
-        set(USE_MINIMAL_SECP256K1 ON)
-    endif()
-else()
-    # Unix-like systems
-    find_path(SECP256K1_INCLUDE_DIR secp256k1.h)
-    find_library(SECP256K1_LIBRARY secp256k1)
-    
-    if(NOT SECP256K1_INCLUDE_DIR OR NOT SECP256K1_LIBRARY)
-        message(FATAL_ERROR "secp256k1 library not found")
-    endif()
-endif()
-
-# Platform-specific configurations
-if(WIN32)
-    # Windows-specific settings
-    add_definitions(-DWIN32_LEAN_AND_MEAN -DNOMINMAX)
-    
-    # Use vcpkg or find_package for secp256k1
-    find_path(SECP256K1_INCLUDE_DIR secp256k1.h)
-    find_library(SECP256K1_LIBRARY secp256k1)
-    
-    if(NOT SECP256K1_INCLUDE_DIR OR NOT SECP256K1_LIBRARY)
         message(WARNING "secp256k1 not found. Using minimal implementation.")
         set(USE_MINIMAL_SECP256K1 ON)
         # Use Windows-compatible source file
         set(SOURCES wallet_generator_win.cpp)
     else()
-        set(SOURCES wallet_generator.cpp)
+        set(SOURCES wallet_generator_win.cpp)
     endif()
 else()
     # Unix-like systems
@@ -66,7 +43,7 @@ else()
         message(FATAL_ERROR "secp256k1 library not found")
     endif()
     
-    set(SOURCES wallet_generator.cpp)
+    set(SOURCES wallet_generator.cpp wallet_generator_impl.cpp)
 endif()
 
 # Create executable
