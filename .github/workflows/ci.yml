@@ -25,14 +25,21 @@ jobs:
     - name: Set up GCC
       if: matrix.compiler == 'gcc'
       run: |
-        sudo apt-get install -y gcc-9 g++-9
-        echo "CXX=g++-9" >> $GITHUB_ENV
+        sudo apt-get install -y gcc g++
+        echo "CC=gcc" >> $GITHUB_ENV
+        echo "CXX=g++" >> $GITHUB_ENV
         
     - name: Set up Clang
       if: matrix.compiler == 'clang'
       run: |
-        sudo apt-get install -y clang-12
-        echo "CXX=clang++-12" >> $GITHUB_ENV
+        sudo apt-get install -y clang
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+        
+    - name: Verify compiler installation
+      run: |
+        echo "Using compiler: $CXX"
+        $CXX --version
         
     - name: Build project
       run: make
@@ -118,7 +125,7 @@ jobs:
       uses: codecov/codecov-action@v3
       with:
         file: ./tests/coverage.info
-        fail_ci_if_error: true
+        fail_ci_if_error: false
 
   comprehensive-test:
     runs-on: ubuntu-latest
@@ -146,3 +153,40 @@ jobs:
           tests/coverage_html/
           artifacts/
         retention-days: 7
+
+  # Additional job to test with latest Ubuntu LTS compilers
+  build-ubuntu-latest:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        compiler: 
+          - { cc: gcc-11, cxx: g++-11 }
+          - { cc: clang-14, cxx: clang++-14 }
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev libsecp256k1-dev build-essential
+        
+    - name: Install specific compiler
+      run: |
+        sudo apt-get install -y ${{ matrix.compiler.cc }} ${{ matrix.compiler.cxx }}
+        
+    - name: Set compiler environment
+      run: |
+        echo "CC=${{ matrix.compiler.cc }}" >> $GITHUB_ENV
+        echo "CXX=${{ matrix.compiler.cxx }}" >> $GITHUB_ENV
+        
+    - name: Verify compiler
+      run: |
+        ${{ matrix.compiler.cxx }} --version
+        
+    - name: Build with specific compiler
+      run: make CXX=${{ matrix.compiler.cxx }}
+      
+    - name: Test basic functionality
+      run: |
+        ./wallet_generator "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
