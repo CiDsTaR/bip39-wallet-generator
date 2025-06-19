@@ -11,6 +11,10 @@
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
 #include <openssl/ripemd.h>
+#include <openssl/opensslv.h>
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#include <openssl/provider.h>
+#endif
 #include <secp256k1.h>
 
 struct NetworkConfig {
