@@ -42,11 +42,17 @@ run_test() {
     echo "Command: $test_command"
     echo
     
-    if eval $test_command; then
+    # Run the command and capture exit code
+    set +e  # Temporarily disable exit on error
+    eval $test_command
+    local exit_code=$?
+    set -e  # Re-enable exit on error
+    
+    if [ $exit_code -eq 0 ]; then
         print_color $GREEN "✓ $test_name PASSED"
         ((PASSED_TESTS++))
     else
-        print_color $RED "✗ $test_name FAILED"
+        print_color $RED "✗ $test_name FAILED (exit code: $exit_code)"
         ((FAILED_TESTS++))
     fi
     ((TOTAL_TESTS++))
@@ -153,11 +159,15 @@ show_summary() {
         print_color $RED "Failed: $FAILED_TESTS"
     fi
     
-    local success_rate=$((PASSED_TESTS * 100 / TOTAL_TESTS))
-    if [ $FAILED_TESTS -eq 0 ]; then
-        print_color $GREEN "Success Rate: ${success_rate}% - ALL TESTS PASSED! 🎉"
+    if [ $TOTAL_TESTS -gt 0 ]; then
+        local success_rate=$((PASSED_TESTS * 100 / TOTAL_TESTS))
+        if [ $FAILED_TESTS -eq 0 ]; then
+            print_color $GREEN "Success Rate: ${success_rate}% - ALL TESTS PASSED! 🎉"
+        else
+            print_color $RED "Success Rate: ${success_rate}% - Some tests failed ❌"
+        fi
     else
-        print_color $RED "Success Rate: ${success_rate}% - Some tests failed ❌"
+        print_color $YELLOW "No tests were run"
     fi
     
     echo
@@ -178,6 +188,7 @@ main() {
                 check_prerequisites
                 run_all_tests
                 show_summary
+                # Fixed: Return the actual failed test count, not just whether there are failures
                 exit $FAILED_TESTS
                 ;;
             -q|--quick)

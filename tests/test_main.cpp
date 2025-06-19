@@ -14,6 +14,9 @@ public:
     void runAllTests() {
         std::cout << "Running BIP39 Wallet Generator Tests...\n" << std::endl;
         
+        // Reset test framework before starting
+        TestFramework::reset();
+        
         testMnemonicToSeed();
         testBitcoinWalletGeneration();
         testEthereumWalletGeneration();
@@ -239,5 +242,16 @@ int main() {
     WalletGeneratorTest test;
     test.runAllTests();
     
-    return TestFramework::hasFailures() ? 1 : 0;
+    // Debug: Print the actual failure count and exit logic
+    bool hasFailures = TestFramework::hasFailures();
+    int exitCode = hasFailures ? 1 : 0;
+    
+    std::cout << "Debug Info:" << std::endl;
+    std::cout << "  Total Tests: " << TestFramework::getTotalTests() << std::endl;
+    std::cout << "  Passed: " << TestFramework::getPassedTests() << std::endl;
+    std::cout << "  Failed: " << TestFramework::getFailedTests() << std::endl;
+    std::cout << "  hasFailures(): " << (hasFailures ? "true" : "false") << std::endl;
+    std::cout << "  Exit Code: " << exitCode << std::endl;
+    
+    return exitCode;
 }

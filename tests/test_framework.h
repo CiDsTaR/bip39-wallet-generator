@@ -42,7 +42,13 @@ public:
         summary += "Total Tests: " + std::to_string(totalTests) + "\n";
         summary += "Passed: " + std::to_string(passedTests) + "\n";
         summary += "Failed: " + std::to_string(failedTests) + "\n";
-        summary += "Success Rate: " + std::to_string((passedTests * 100) / totalTests) + "%\n";
+        
+        if (totalTests > 0) {
+            summary += "Success Rate: " + std::to_string((passedTests * 100) / totalTests) + "%\n";
+        } else {
+            summary += "Success Rate: 0%\n";
+        }
+        
         summary += "Execution Time: " + std::to_string(duration.count()) + "ms\n";
         
         if (failedTests > 0) {
@@ -65,7 +71,13 @@ public:
         failedTests = 0;
         failures.clear();
         currentGroup = "";
+        startTime = std::chrono::high_resolution_clock::now();
     }
+    
+    // Debug functions to help diagnose issues
+    static int getTotalTests() { return totalTests; }
+    static int getPassedTests() { return passedTests; }
+    static int getFailedTests() { return failedTests; }
 };
 
 // Static member initialization
