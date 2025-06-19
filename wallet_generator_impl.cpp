@@ -143,18 +143,29 @@ WalletGenerator::WalletGenerator() {
     // For OpenSSL 3.x compatibility, try to load legacy provider for RIPEMD160
     // This is optional and will fail silently on older OpenSSL versions
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    // Initialize provider pointers
+    legacy_provider = nullptr;
+    default_provider = nullptr;
+    
     // OpenSSL 3.x - try to load legacy provider
-    OSSL_PROVIDER* legacy = OSSL_PROVIDER_load(nullptr, "legacy");
-    OSSL_PROVIDER* deflt = OSSL_PROVIDER_load(nullptr, "default");
-    // We don't need to store these providers as they're automatically managed
-    // and this is just to ensure RIPEMD160 is available if possible
-    (void)legacy; // Suppress unused variable warning
-    (void)deflt;  // Suppress unused variable warning
+    legacy_provider = OSSL_PROVIDER_load(nullptr, "legacy");
+    default_provider = OSSL_PROVIDER_load(nullptr, "default");
+    // Note: These may be nullptr if loading fails, which is acceptable
 #endif
 }
 
 WalletGenerator::~WalletGenerator() {
     secp256k1_context_destroy(ctx);
+    
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    // Properly unload OpenSSL providers to prevent memory leaks
+    if (legacy_provider) {
+        OSSL_PROVIDER_unload(legacy_provider);
+    }
+    if (default_provider) {
+        OSSL_PROVIDER_unload(default_provider);
+    }
+#endif
 }
 
 std::vector<uint8_t> WalletGenerator::mnemonicToSeed(const std::string& mnemonic, const std::string& passphrase) {

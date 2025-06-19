@@ -29,6 +29,10 @@ struct NetworkConfig {
 class WalletGenerator {
 private:
     secp256k1_context* ctx;
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+    OSSL_PROVIDER* legacy_provider;
+    OSSL_PROVIDER* default_provider;
+#endif
 
     std::string bytesToHex(const std::vector<uint8_t>& bytes);
     // Removed hexToBytes as it's unused - fixes unusedPrivateFunction warning
