@@ -1,0 +1,148 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev libsecp256k1-dev build-essential
+        sudo apt-get install -y valgrind lcov cppcheck
+        
+    - name: Set up GCC
+      if: matrix.compiler == 'gcc'
+      run: |
+        sudo apt-get install -y gcc-9 g++-9
+        echo "CXX=g++-9" >> $GITHUB_ENV
+        
+    - name: Set up Clang
+      if: matrix.compiler == 'clang'
+      run: |
+        sudo apt-get install -y clang-12
+        echo "CXX=clang++-12" >> $GITHUB_ENV
+        
+    - name: Build project
+      run: make
+      
+    - name: Run unit tests
+      run: make test-unit
+      
+    - name: Run integration tests
+      run: make test-integration
+      
+    - name: Run security tests
+      run: make test-security
+      
+    - name: Run performance tests
+      run: make test-performance
+        
+    - name: Test known vectors
+      run: |
+        ./wallet_generator -a "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+        
+    - name: Test custom derivation
+      run: |
+        ./wallet_generator -n ethereum -p "m/44'/60'/0'/0/5" "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+
+  build-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        brew install openssl secp256k1
+        
+    - name: Build project
+      run: make
+      
+    - name: Run tests
+      run: |
+        make test-unit
+        make test-integration
+        make test-security
+      
+    - name: Test functionality
+      run: |
+        ./wallet_generator -n bitcoin "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev libsecp256k1-dev build-essential cppcheck valgrind
+        
+    - name: Build project
+      run: make
+        
+    - name: Static analysis with cppcheck
+      run: make static-analysis
+        
+    - name: Memory leak check with Valgrind
+      run: make memtest
+
+  code-coverage:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev libsecp256k1-dev build-essential lcov
+        
+    - name: Build and run coverage
+      run: make coverage
+        
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./tests/coverage.info
+        fail_ci_if_error: true
+
+  comprehensive-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev libsecp256k1-dev build-essential valgrind lcov cppcheck
+        
+    - name: Make scripts executable
+      run: chmod +x scripts/*.sh
+        
+    - name: Run comprehensive test suite
+      run: ./scripts/run_tests.sh --all
+      
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: test-results
+        path: |
+          tests/coverage_html/
+          artifacts/
+        retention-days: 7
