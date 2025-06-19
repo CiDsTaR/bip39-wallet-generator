@@ -118,17 +118,25 @@ std::string WalletGenerator::base58Encode(const std::vector<uint8_t>& data) {
     return result;
 }
 
-std::vector<uint8_t> WalletGenerator::deriveKey(const std::vector<uint8_t>& seed, const std::string& /* path */) {
-    // Simplified HD derivation implementation
+std::vector<uint8_t> WalletGenerator::deriveKey(const std::vector<uint8_t>& seed, const std::string& path) {
+    // Simplified HD derivation implementation that considers the path
     // For production use a complete library like libbitcoin
-    // Note: path parameter is unused in this simplified implementation
     
     // Master key derivation
     std::string hmacKey = "Bitcoin seed";
     std::vector<uint8_t> hmacKeyBytes(hmacKey.begin(), hmacKey.end());
     std::vector<uint8_t> masterKey = hmacSha512(hmacKeyBytes, seed);
     
-    return std::vector<uint8_t>(masterKey.begin(), masterKey.begin() + 32);
+    // Use the path to create different keys (simplified approach)
+    // In a real implementation, you would parse the path and derive step by step
+    std::vector<uint8_t> pathBytes(path.begin(), path.end());
+    std::vector<uint8_t> combinedSeed = seed;
+    combinedSeed.insert(combinedSeed.end(), pathBytes.begin(), pathBytes.end());
+    
+    // Derive key using the combined seed and path
+    std::vector<uint8_t> derivedKey = hmacSha512(hmacKeyBytes, combinedSeed);
+    
+    return std::vector<uint8_t>(derivedKey.begin(), derivedKey.begin() + 32);
 }
 
 WalletGenerator::WalletGenerator() {
