@@ -9,10 +9,10 @@ PERFORMANCE_TEST = performance_test
 SECURITY_TEST = security_test
 
 # Source files
-UNIT_TEST_SRC = test_main.cpp
+UNIT_TEST_SRC = test_main.cpp ../wallet_generator_impl.cpp
 INTEGRATION_TEST_SRC = integration_test.cpp
-PERFORMANCE_TEST_SRC = performance_test.cpp
-SECURITY_TEST_SRC = security_test.cpp
+PERFORMANCE_TEST_SRC = performance_test.cpp ../wallet_generator_impl.cpp
+SECURITY_TEST_SRC = security_test.cpp ../wallet_generator_impl.cpp
 
 # Detect operating system
 UNAME_S := $(shell uname -s)

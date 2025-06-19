@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 #include "test_framework.h"
-#include "../wallet_generator.cpp"
+#include "../wallet_generator.h"
 
 class WalletGeneratorTest {
 private:

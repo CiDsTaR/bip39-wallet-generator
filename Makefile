@@ -3,7 +3,7 @@ CXXFLAGS = -std=c++17 -Wall -Wextra -O2
 LDFLAGS = -lssl -lcrypto -lsecp256k1
 
 TARGET = wallet_generator
-SOURCES = wallet_generator.cpp
+SOURCES = wallet_generator.cpp wallet_generator_impl.cpp
 
 # Detect operating system
 UNAME_S := $(shell uname -s)
