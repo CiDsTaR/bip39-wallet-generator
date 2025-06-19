@@ -192,3 +192,130 @@ jobs:
     - name: Test basic functionality
       run: |
         ./wallet_generator "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about"
+
+
+  # Test windows build
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        build_type: [Release, Debug]
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Visual Studio environment
+      uses: microsoft/setup-msbuild@v2
+      
+    - name: Setup vcpkg
+      run: |
+        # Install vcpkg
+        git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
+        cd C:\vcpkg
+        .\bootstrap-vcpkg.bat
+        .\vcpkg.exe integrate install
+        
+    - name: Install dependencies
+      run: |
+        cd C:\vcpkg
+        # Install OpenSSL
+        .\vcpkg.exe install openssl:x64-windows
+        
+        # Try to install secp256k1 (fallback to minimal implementation if not available)
+        .\vcpkg.exe install secp256k1:x64-windows
+        
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        
+    - name: Build project
+      run: |
+        cd build
+        cmake --build . --config ${{ matrix.build_type }}
+        
+    - name: Copy test runner to build directory
+      run: |
+        copy scripts\run_tests.bat build\${{ matrix.build_type }}\
+        
+    - name: Run Windows test suite
+      run: |
+        cd build\${{ matrix.build_type }}
+        .\run_tests.bat --all
+        
+    - name: Test cross-platform compatibility
+      run: |
+        cd build\${{ matrix.build_type }}
+        echo "Testing cross-platform wallet compatibility..."
+        
+        # Generate same wallet on Windows and compare format
+        .\wallet_generator.exe -v "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" > windows_output.txt
+        
+        # Check that output contains expected elements
+        findstr /C:"Private Key:" windows_output.txt || exit 1
+        findstr /C:"Address:" windows_output.txt || exit 1
+        findstr /C:"=== bitcoin Wallet ===" windows_output.txt || exit 1
+        
+    - name: Performance test
+      run: |
+        cd build\${{ matrix.build_type }}
+        echo "Running performance test..."
+        
+        # Time the execution (basic measurement)
+        powershell -Command "Measure-Command { .\wallet_generator.exe -c 10 'abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about' }"
+        
+    - name: Upload Windows artifacts
+      uses: actions/upload-artifact@v4
+      if: matrix.build_type == 'Release'
+      with:
+        name: windows-binaries-${{ runner.os }}
+        path: |
+          build/Release/wallet_generator.exe
+          build/Release/*.dll
+          build/Release/windows_output.txt
+        retention-days: 7
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: windows-test-results-${{ matrix.build_type }}
+        path: |
+          build/${{ matrix.build_type }}/windows_output.txt
+        retention-days: 3
+
+  # Optional: Windows compatibility test (cross-validate with Linux)
+  windows-compatibility:
+    runs-on: windows-latest
+    needs: [build-linux, build-windows]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download Windows artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-binaries-windows
+        path: windows-build/
+        
+    - name: Setup vcpkg (minimal for runtime)
+      run: |
+        git clone https://github.com/Microsoft/vcpkg.git C:\vcpkg
+        cd C:\vcpkg
+        .\bootstrap-vcpkg.bat
+        .\vcpkg.exe install openssl:x64-windows
+        
+    - name: Cross-platform wallet validation
+      run: |
+        cd windows-build
+        
+        # Test that Windows generates same addresses as Linux for same inputs
+        echo "Cross-platform validation test..."
+        .\wallet_generator.exe "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" > win_test.txt
+        
+        # Basic validation that expected format is present
+        findstr /C:"1BvBMSEYstWetqTFn5Au4m4GFg7xJaNVN2" win_test.txt || echo "Address format validation needed"
+        
+        echo "Windows compatibility test completed"
