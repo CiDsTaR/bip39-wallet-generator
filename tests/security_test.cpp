@@ -213,9 +213,10 @@ private:
         TEST_GROUP("Memory Clearing Test");
         
         // This is a basic test - in production you'd want more sophisticated memory analysis
-        std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-        
+        // Fixed: reduced variable scope as suggested by cppcheck
         {
+            std::string mnemonic = "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
+            
             // Create wallet in a scope that will be destroyed
             std::vector<uint8_t> seed = generator.mnemonicToSeed(mnemonic);
             WalletGenerator::WalletInfo wallet = generator.generateWallet(seed, "bitcoin");

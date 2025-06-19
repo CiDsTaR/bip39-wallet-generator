@@ -195,10 +195,15 @@ private:
         // Test multiple generations don't leak memory
         for (int i = 0; i < 100; i++) {
             std::vector<uint8_t> seed = generator.mnemonicToSeed(mnemonic);
+            // Generate wallet and let it go out of scope - fixed: actually use the wallet to avoid unreadVariable warning
             WalletGenerator::WalletInfo wallet = generator.generateWallet(seed, "bitcoin");
-            // Wallets should be different if we change the derivation path
+            // Verify the wallet was generated successfully
+            TEST_ASSERT(!wallet.privateKey.empty(), "Wallet should be generated successfully");
+            
+            // Generate with custom path and verify it's different
             std::string customPath = "m/44'/0'/0'/0/" + std::to_string(i);
             WalletGenerator::WalletInfo wallet2 = generator.generateWallet(seed, "bitcoin", customPath);
+            TEST_ASSERT(wallet.privateKey != wallet2.privateKey, "Different derivation paths should produce different keys");
         }
         
         TEST_ASSERT(true, "Memory management test completed without crashes");

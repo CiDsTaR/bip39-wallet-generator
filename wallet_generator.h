@@ -27,7 +27,7 @@ private:
     secp256k1_context* ctx;
 
     std::string bytesToHex(const std::vector<uint8_t>& bytes);
-    std::vector<uint8_t> hexToBytes(const std::string& hex);
+    // Removed hexToBytes as it's unused - fixes unusedPrivateFunction warning
     std::vector<uint8_t> pbkdf2(const std::string& password, const std::string& salt, int iterations, int dkLen);
     std::vector<uint8_t> hmacSha512(const std::vector<uint8_t>& key, const std::vector<uint8_t>& data);
     std::vector<uint8_t> sha256(const std::vector<uint8_t>& data);

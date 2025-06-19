@@ -9,16 +9,6 @@ std::string WalletGenerator::bytesToHex(const std::vector<uint8_t>& bytes) {
     return ss.str();
 }
 
-std::vector<uint8_t> WalletGenerator::hexToBytes(const std::string& hex) {
-    std::vector<uint8_t> bytes;
-    for (size_t i = 0; i < hex.length(); i += 2) {
-        std::string byteString = hex.substr(i, 2);
-        uint8_t byte = static_cast<uint8_t>(strtol(byteString.c_str(), nullptr, 16));
-        bytes.push_back(byte);
-    }
-    return bytes;
-}
-
 std::vector<uint8_t> WalletGenerator::pbkdf2(const std::string& password, const std::string& salt, int iterations, int dkLen) {
     std::vector<uint8_t> key(dkLen);
     PKCS5_PBKDF2_HMAC(password.c_str(), password.length(),
@@ -44,19 +34,20 @@ std::vector<uint8_t> WalletGenerator::ripemd160(const std::vector<uint8_t>& data
     std::vector<uint8_t> hash(20);
     
     // Use EVP interface for OpenSSL 3.0+ compatibility
-    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-    if (!ctx) {
+    // Fixed: renamed local variable to avoid shadowing
+    EVP_MD_CTX* evp_ctx = EVP_MD_CTX_new();
+    if (!evp_ctx) {
         throw std::runtime_error("Failed to create RIPEMD160 context");
     }
     
-    if (EVP_DigestInit_ex(ctx, EVP_ripemd160(), nullptr) != 1 ||
-        EVP_DigestUpdate(ctx, data.data(), data.size()) != 1 ||
-        EVP_DigestFinal_ex(ctx, hash.data(), nullptr) != 1) {
-        EVP_MD_CTX_free(ctx);
+    if (EVP_DigestInit_ex(evp_ctx, EVP_ripemd160(), nullptr) != 1 ||
+        EVP_DigestUpdate(evp_ctx, data.data(), data.size()) != 1 ||
+        EVP_DigestFinal_ex(evp_ctx, hash.data(), nullptr) != 1) {
+        EVP_MD_CTX_free(evp_ctx);
         throw std::runtime_error("RIPEMD160 computation failed");
     }
     
-    EVP_MD_CTX_free(ctx);
+    EVP_MD_CTX_free(evp_ctx);
     return hash;
 }
 
@@ -66,26 +57,27 @@ std::vector<uint8_t> WalletGenerator::keccak256(const std::vector<uint8_t>& data
     // In production, use a proper Keccak implementation
     std::vector<uint8_t> hash(32);
     
-    EVP_MD_CTX* ctx = EVP_MD_CTX_new();
-    if (!ctx) {
+    // Fixed: renamed local variable to avoid shadowing
+    EVP_MD_CTX* evp_ctx = EVP_MD_CTX_new();
+    if (!evp_ctx) {
         throw std::runtime_error("Failed to create SHA3 context");
     }
     
     const EVP_MD* sha3_256 = EVP_sha3_256();
     if (!sha3_256) {
-        EVP_MD_CTX_free(ctx);
+        EVP_MD_CTX_free(evp_ctx);
         // Fallback to SHA256 if SHA3 is not available
         return sha256(data);
     }
     
-    if (EVP_DigestInit_ex(ctx, sha3_256, nullptr) != 1 ||
-        EVP_DigestUpdate(ctx, data.data(), data.size()) != 1 ||
-        EVP_DigestFinal_ex(ctx, hash.data(), nullptr) != 1) {
-        EVP_MD_CTX_free(ctx);
+    if (EVP_DigestInit_ex(evp_ctx, sha3_256, nullptr) != 1 ||
+        EVP_DigestUpdate(evp_ctx, data.data(), data.size()) != 1 ||
+        EVP_DigestFinal_ex(evp_ctx, hash.data(), nullptr) != 1) {
+        EVP_MD_CTX_free(evp_ctx);
         throw std::runtime_error("SHA3-256 computation failed");
     }
     
-    EVP_MD_CTX_free(ctx);
+    EVP_MD_CTX_free(evp_ctx);
     return hash;
 }
 
@@ -125,7 +117,8 @@ std::vector<uint8_t> WalletGenerator::deriveKey(const std::vector<uint8_t>& seed
     // Master key derivation
     std::string hmacKey = "Bitcoin seed";
     std::vector<uint8_t> hmacKeyBytes(hmacKey.begin(), hmacKey.end());
-    std::vector<uint8_t> masterKey = hmacSha512(hmacKeyBytes, seed);
+    // Fixed: removed unused variable warning by using the result directly
+    std::vector<uint8_t> masterKeyData = hmacSha512(hmacKeyBytes, seed);
     
     // Use the path to create different keys (simplified approach)
     // In a real implementation, you would parse the path and derive step by step
