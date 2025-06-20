@@ -23,7 +23,6 @@ echo.
 REM Test counters
 set TOTAL_TESTS=0
 set PASSED_TESTS=0
-set FAILED_TESTS=0
 
 REM Check command line argument
 if "%1"=="--all" goto :run_all_tests
@@ -44,7 +43,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Basic Bitcoin Wallet FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 2: Ethereum Wallet
@@ -56,7 +54,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Ethereum Wallet FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 3: Multiple Wallets
@@ -68,7 +65,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Multiple Wallets FAILED
-    set /a FAILED_TESTS+=1
 )
 
 goto :show_results
@@ -86,7 +82,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Help Command FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 2: Bitcoin Wallet
@@ -98,7 +93,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Bitcoin Wallet FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 3: Ethereum Wallet
@@ -110,7 +104,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Ethereum Wallet FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 4: Binance Wallet
@@ -122,7 +115,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Binance Wallet FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 5: Litecoin Wallet
@@ -134,7 +126,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Litecoin Wallet FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 6: Multiple Wallets
@@ -146,7 +137,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Multiple Wallets FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 7: All Networks
@@ -158,7 +148,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ All Networks FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 8: Custom Derivation
@@ -170,7 +159,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Custom Derivation FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 9: With Passphrase
@@ -182,7 +170,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ With Passphrase FAILED
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 10: Verbose Mode
@@ -194,7 +181,6 @@ if !errorlevel! equ 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Verbose Mode FAILED
-    set /a FAILED_TESTS+=1
 )
 
 echo.
@@ -210,7 +196,6 @@ if !errorlevel! neq 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Invalid Network Test FAILED (should have failed)
-    set /a FAILED_TESTS+=1
 )
 
 REM Test 12: Missing Mnemonic (should fail)
@@ -222,7 +207,6 @@ if !errorlevel! neq 0 (
     set /a PASSED_TESTS+=1
 ) else (
     echo ✗ Missing Mnemonic Test FAILED (should have failed)
-    set /a FAILED_TESTS+=1
 )
 
 goto :show_results
@@ -233,6 +217,10 @@ echo ==========================================
 echo Test Results Summary
 echo ==========================================
 echo.
+
+REM Calculate failed tests
+set /a FAILED_TESTS=!TOTAL_TESTS! - !PASSED_TESTS!
+
 echo Total Tests: !TOTAL_TESTS!
 echo Passed: !PASSED_TESTS!
 echo Failed: !FAILED_TESTS!
