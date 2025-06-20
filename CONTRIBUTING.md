@@ -567,13 +567,6 @@ security(docs): document RIPEMD160 fallback security implications
 - [ ] **Testing** passes on target platforms
 - [ ] **Documentation** platform-specific where needed
 
-### Review Timeline
-
-- **Initial Review**: Within 48 hours for acknowledgment
-- **Security Review**: 3-7 days for crypto-related changes
-- **Standard Review**: 1-3 days for non-security changes
-- **Final Approval**: After all feedback addressed and tests pass
-
 ### Feedback and Iteration
 
 1. **Address all review feedback**
