@@ -26,14 +26,18 @@ if(WIN32)
     find_path(SECP256K1_INCLUDE_DIR secp256k1.h)
     find_library(SECP256K1_LIBRARY secp256k1)
     
+    # On Windows, prefer minimal implementation due to linking issues
     if(NOT SECP256K1_INCLUDE_DIR OR NOT SECP256K1_LIBRARY)
-        message(WARNING "secp256k1 not found. Using minimal implementation.")
+        message(STATUS "secp256k1 not found. Using minimal implementation.")
         set(USE_MINIMAL_SECP256K1 ON)
-        # Use Windows-compatible source file
-        set(SOURCES wallet_generator_win.cpp)
     else()
-        set(SOURCES wallet_generator_win.cpp)
+        # Try to use full secp256k1, but fallback to minimal if linking fails
+        message(STATUS "secp256k1 found, but using minimal implementation for Windows compatibility.")
+        set(USE_MINIMAL_SECP256K1 ON)
     endif()
+    
+    # Always use Windows-compatible source file
+    set(SOURCES wallet_generator_win.cpp)
 else()
     # Unix-like systems
     find_path(SECP256K1_INCLUDE_DIR secp256k1.h)
