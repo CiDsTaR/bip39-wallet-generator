@@ -17,7 +17,9 @@
 // Windows compatibility
 #ifdef _WIN32
     #include "windows/getopt_win.h"
-    #define WIN32_LEAN_AND_MEAN
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
     #include <windows.h>
     #pragma comment(lib, "ws2_32.lib")
     #pragma comment(lib, "crypt32.lib")
@@ -42,9 +44,11 @@ struct NetworkConfig {
 };
 
 class WalletGenerator {
-private:
+public:
+    // Make networks accessible (moved to public section)
     static const std::map<std::string, NetworkConfig> networks;
-    
+
+private:
 #ifdef USE_MINIMAL_SECP256K1
     // Use minimal implementation
     MinimalSecp256k1Context* ctx;
@@ -68,8 +72,8 @@ private:
 
     std::vector<uint8_t> pbkdf2(const std::string& password, const std::string& salt, int iterations, int dkLen) {
         std::vector<uint8_t> key(dkLen);
-        PKCS5_PBKDF2_HMAC(password.c_str(), password.length(),
-                         reinterpret_cast<const unsigned char*>(salt.c_str()), salt.length(),
+        PKCS5_PBKDF2_HMAC(password.c_str(), static_cast<int>(password.length()),
+                         reinterpret_cast<const unsigned char*>(salt.c_str()), static_cast<int>(salt.length()),
                          iterations, EVP_sha512(), dkLen, key.data());
         return key;
     }
@@ -77,7 +81,7 @@ private:
     std::vector<uint8_t> hmacSha512(const std::vector<uint8_t>& key, const std::vector<uint8_t>& data) {
         std::vector<uint8_t> result(64);
         unsigned int len;
-        HMAC(EVP_sha512(), key.data(), key.size(), data.data(), data.size(), result.data(), &len);
+        HMAC(EVP_sha512(), key.data(), static_cast<int>(key.size()), data.data(), static_cast<int>(data.size()), result.data(), &len);
         return result;
     }
 
@@ -151,9 +155,9 @@ private:
         
         while (!temp.empty() && temp.back() != 0) {
             int remainder = 0;
-            for (int i = temp.size() - 1; i >= 0; i--) {
-                int current = remainder * 256 + temp[i];
-                temp[i] = current / 58;
+            for (int i = static_cast<int>(temp.size()) - 1; i >= 0; i--) {
+                int current = remainder * 256 + static_cast<int>(temp[i]);
+                temp[i] = static_cast<uint8_t>(current / 58);
                 remainder = current % 58;
             }
             result = alphabet[remainder] + result;
