@@ -4,6 +4,15 @@ A fast and secure C++ implementation for generating cryptocurrency wallets from 
 
 ⚠️ **IMPORTANT**: This is an educational and development tool. See [Production Readiness](#production-readiness) section before using with real funds.
 
+## 💝 Support This Project
+
+If you find this project helpful, consider supporting development:
+
+**Bitcoin (BTC):** `bc1q6zq385fgej7dg6fy2p63lk6jrp3vrk6qln2vnd`
+
+**EVM-compatible networks (ETH/BNB or any other):** `0xB3a1A708C98AE07BD024c2A60a81e07D189B5390`
+
+
 ## Features
 
 - 🔐 **BIP39 Compliant** - Standard mnemonic to seed conversion
