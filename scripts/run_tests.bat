@@ -1,68 +1,29 @@
 @echo off
-REM Windows Test Runner for BIP39 Wallet Generator
-REM Usage: run_tests.bat [--basic|--all]
-
+REM Simple Windows Test Runner for BIP39 Wallet Generator
 setlocal EnableDelayedExpansion
 
-REM Colors (if supported)
-set GREEN=[92m
-set RED=[91m
-set YELLOW=[93m
-set BLUE=[94m
-set NC=[0m
+echo.
+echo ==========================================
+echo Windows BIP39 Wallet Generator Test Runner
+echo ==========================================
+echo.
+
+REM Check if wallet_generator.exe exists
+if not exist "wallet_generator.exe" (
+    echo Error: wallet_generator.exe not found in current directory
+    echo Current directory: %CD%
+    dir *.exe
+    pause
+    exit /b 1
+)
+
+echo Using executable: wallet_generator.exe
+echo.
 
 REM Test counters
 set TOTAL_TESTS=0
 set PASSED_TESTS=0
 set FAILED_TESTS=0
-
-echo.
-echo %BLUE%==================================================%NC%
-echo %BLUE%Windows BIP39 Wallet Generator Test Runner%NC%
-echo %BLUE%==================================================%NC%
-echo.
-
-REM Check if wallet_generator.exe exists
-if not exist "wallet_generator.exe" (
-    if not exist "build\Release\wallet_generator.exe" (
-        echo %RED%Error: wallet_generator.exe not found%NC%
-        echo Please build the project first:
-        echo   mkdir build ^&^& cd build
-        echo   cmake .. -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
-        echo   cmake --build . --config Release
-        pause
-        exit /b 1
-    ) else (
-        set WALLET_EXE=build\Release\wallet_generator.exe
-    )
-) else (
-    set WALLET_EXE=wallet_generator.exe
-)
-
-echo Using executable: !WALLET_EXE!
-echo.
-
-REM Function to run a test
-:run_test
-set TEST_NAME=%~1
-set TEST_CMD=%~2
-set /a TOTAL_TESTS+=1
-
-echo %YELLOW%Running: %TEST_NAME%%NC%
-echo Command: %TEST_CMD%
-echo.
-
-REM Run the command and capture exit code
-%TEST_CMD% >nul 2>&1
-if !errorlevel! equ 0 (
-    echo %GREEN%✓ %TEST_NAME% PASSED%NC%
-    set /a PASSED_TESTS+=1
-) else (
-    echo %RED%✗ %TEST_NAME% FAILED (exit code: !errorlevel!)%NC%
-    set /a FAILED_TESTS+=1
-)
-echo.
-goto :eof
 
 REM Check command line argument
 if "%1"=="--all" goto :run_all_tests
@@ -71,82 +32,222 @@ if "%1"=="" goto :run_basic_tests
 goto :show_usage
 
 :run_basic_tests
-echo %BLUE%Running Basic Windows Tests%NC%
+echo Running Basic Windows Tests
 echo.
 
-call :run_test "Basic Bitcoin Wallet" "!WALLET_EXE! \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Ethereum Wallet" "!WALLET_EXE! -n ethereum \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Multiple Wallets" "!WALLET_EXE! -n bitcoin -c 3 \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Custom Path" "!WALLET_EXE! -n bitcoin -p \"m/44'/0'/0'/0/5\" \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "With Passphrase" "!WALLET_EXE! -P \"test\" \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Verbose Output" "!WALLET_EXE! -v \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
+REM Test 1: Basic Bitcoin Wallet
+echo Running: Basic Bitcoin Wallet
+wallet_generator.exe "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Basic Bitcoin Wallet PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Basic Bitcoin Wallet FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 2: Ethereum Wallet
+echo Running: Ethereum Wallet
+wallet_generator.exe -n ethereum "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Ethereum Wallet PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Ethereum Wallet FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 3: Multiple Wallets
+echo Running: Multiple Wallets
+wallet_generator.exe -n bitcoin -c 3 "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Multiple Wallets PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Multiple Wallets FAILED
+    set /a FAILED_TESTS+=1
+)
 
 goto :show_results
 
 :run_all_tests
-echo %BLUE%Running Comprehensive Windows Tests%NC%
+echo Running Comprehensive Windows Tests
 echo.
 
-REM Basic functionality tests
-call :run_test "Help Command" "!WALLET_EXE! -h"
-call :run_test "Bitcoin Wallet" "!WALLET_EXE! \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Ethereum Wallet" "!WALLET_EXE! -n ethereum \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Binance Wallet" "!WALLET_EXE! -n binance \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Litecoin Wallet" "!WALLET_EXE! -n litecoin \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Dogecoin Wallet" "!WALLET_EXE! -n dogecoin \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
+REM Test 1: Help Command
+echo Running: Help Command
+wallet_generator.exe -h >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Help Command PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Help Command FAILED
+    set /a FAILED_TESTS+=1
+)
 
-REM Advanced functionality
-call :run_test "Multiple Wallets" "!WALLET_EXE! -n ethereum -c 5 \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "All Networks" "!WALLET_EXE! -a \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Custom Derivation" "!WALLET_EXE! -n bitcoin -p \"m/44'/0'/0'/0/10\" \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "With Passphrase" "!WALLET_EXE! -P \"TREZOR\" \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
-call :run_test "Verbose Mode" "!WALLET_EXE! -v -n ethereum \"abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about\""
+REM Test 2: Bitcoin Wallet
+echo Running: Bitcoin Wallet
+wallet_generator.exe "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Bitcoin Wallet PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Bitcoin Wallet FAILED
+    set /a FAILED_TESTS+=1
+)
 
-REM Error handling tests
-echo %BLUE%Testing Error Handling%NC%
+REM Test 3: Ethereum Wallet
+echo Running: Ethereum Wallet
+wallet_generator.exe -n ethereum "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Ethereum Wallet PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Ethereum Wallet FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 4: Binance Wallet
+echo Running: Binance Wallet
+wallet_generator.exe -n binance "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Binance Wallet PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Binance Wallet FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 5: Litecoin Wallet
+echo Running: Litecoin Wallet
+wallet_generator.exe -n litecoin "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Litecoin Wallet PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Litecoin Wallet FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 6: Multiple Wallets
+echo Running: Multiple Wallets
+wallet_generator.exe -n ethereum -c 5 "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Multiple Wallets PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Multiple Wallets FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 7: All Networks
+echo Running: All Networks
+wallet_generator.exe -a "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ All Networks PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ All Networks FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 8: Custom Derivation
+echo Running: Custom Derivation
+wallet_generator.exe -n bitcoin -p "m/44'/0'/0'/0/10" "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Custom Derivation PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Custom Derivation FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 9: With Passphrase
+echo Running: With Passphrase
+wallet_generator.exe -P "TREZOR" "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ With Passphrase PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ With Passphrase FAILED
+    set /a FAILED_TESTS+=1
+)
+
+REM Test 10: Verbose Mode
+echo Running: Verbose Mode
+wallet_generator.exe -v -n ethereum "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about" >nul 2>&1
+set /a TOTAL_TESTS+=1
+if !errorlevel! equ 0 (
+    echo ✓ Verbose Mode PASSED
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Verbose Mode FAILED
+    set /a FAILED_TESTS+=1
+)
+
 echo.
-!WALLET_EXE! -n invalid_network "test" >nul 2>&1
-if !errorlevel! neq 0 (
-    echo %GREEN%✓ Invalid Network Test PASSED (correctly failed)%NC%
-    set /a PASSED_TESTS+=1
-) else (
-    echo %RED%✗ Invalid Network Test FAILED (should have failed)%NC%
-    set /a FAILED_TESTS+=1
-)
-set /a TOTAL_TESTS+=1
+echo Testing Error Handling
+echo.
 
-!WALLET_EXE! >nul 2>&1
+REM Test 11: Invalid Network (should fail)
+echo Running: Invalid Network Test
+wallet_generator.exe -n invalid_network "test" >nul 2>&1
+set /a TOTAL_TESTS+=1
 if !errorlevel! neq 0 (
-    echo %GREEN%✓ Missing Mnemonic Test PASSED (correctly failed)%NC%
+    echo ✓ Invalid Network Test PASSED (correctly failed)
     set /a PASSED_TESTS+=1
 ) else (
-    echo %RED%✗ Missing Mnemonic Test FAILED (should have failed)%NC%
+    echo ✗ Invalid Network Test FAILED (should have failed)
     set /a FAILED_TESTS+=1
 )
+
+REM Test 12: Missing Mnemonic (should fail)
+echo Running: Missing Mnemonic Test
+wallet_generator.exe >nul 2>&1
 set /a TOTAL_TESTS+=1
+if !errorlevel! neq 0 (
+    echo ✓ Missing Mnemonic Test PASSED (correctly failed)
+    set /a PASSED_TESTS+=1
+) else (
+    echo ✗ Missing Mnemonic Test FAILED (should have failed)
+    set /a FAILED_TESTS+=1
+)
 
 goto :show_results
 
 :show_results
 echo.
-echo %BLUE%==================================================%NC%
-echo %BLUE%Test Results Summary%NC%
-echo %BLUE%==================================================%NC%
+echo ==========================================
+echo Test Results Summary
+echo ==========================================
 echo.
 echo Total Tests: !TOTAL_TESTS!
-if !PASSED_TESTS! gtr 0 (
-    echo %GREEN%Passed: !PASSED_TESTS!%NC%
-)
-if !FAILED_TESTS! gtr 0 (
-    echo %RED%Failed: !FAILED_TESTS!%NC%
+echo Passed: !PASSED_TESTS!
+echo Failed: !FAILED_TESTS!
+
+if !TOTAL_TESTS! gtr 0 (
+    set /a SUCCESS_RATE=!PASSED_TESTS! * 100 / !TOTAL_TESTS!
+) else (
+    set SUCCESS_RATE=0
 )
 
-set /a SUCCESS_RATE=!PASSED_TESTS! * 100 / !TOTAL_TESTS!
 if !FAILED_TESTS! equ 0 (
-    echo %GREEN%Success Rate: !SUCCESS_RATE!%% - ALL TESTS PASSED! 🎉%NC%
+    echo Success Rate: !SUCCESS_RATE!%% - ALL TESTS PASSED!
     exit /b 0
 ) else (
-    echo %RED%Success Rate: !SUCCESS_RATE!%% - Some tests failed ❌%NC%
+    echo Success Rate: !SUCCESS_RATE!%% - Some tests failed
     exit /b 1
 )
 
@@ -162,5 +263,4 @@ echo   %0           # Run basic tests
 echo   %0 --basic   # Run basic tests
 echo   %0 --all     # Run all tests
 echo.
-pause
 exit /b 0

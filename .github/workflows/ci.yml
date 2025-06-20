@@ -235,12 +235,9 @@ jobs:
         cd build
         cmake --build . --config ${{ matrix.build_type }}
         
-    - name: Copy test runner to build directory
-      run: |
-        copy scripts\run_tests.bat build\${{ matrix.build_type }}\
-        
     - name: Run Windows test suite
       run: |
+        copy scripts\run_tests.bat build\${{ matrix.build_type }}\
         cd build\${{ matrix.build_type }}
         .\run_tests.bat --all
         
